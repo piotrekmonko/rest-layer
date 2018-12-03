@@ -2,7 +2,7 @@
 
 REST APIs made easy.
 
-[![godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/rs/rest-layer) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/rs/rest-layer/master/LICENSE) [![build](https://img.shields.io/travis/rs/rest-layer.svg?style=flat)](https://travis-ci.org/rs/rest-layer) [![Go Report Card](https://goreportcard.com/badge/github.com/rs/rest-layer)](https://goreportcard.com/report/github.com/rs/rest-layer)
+[![godoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/rs/rest-layer) [![license](https://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/rs/rest-layer/master/LICENSE) [![build](https://img.shields.io/travis/rs/rest-layer.svg?style=flat)](https://travis-ci.org/rs/rest-layer) [![Go Report Card](https://goreportcard.com/badge/github.com/rs/rest-layer)](https://goreportcard.com/report/github.com/rs/rest-layer)
 
 REST Layer is an API framework heavily inspired by the excellent [Python Eve](http://python-eve.org). It helps you create a comprehensive, customizable, and secure REST (graph) API on top of pluggable [backend storages](#storage-handlers) with no boiler plate code so you can focus on your business logic.
 
@@ -40,7 +40,17 @@ The REST Layer framework is composed of several sub-packages:
   - [Hooks](#hooks)
   - [Sub Resources](#sub-resources)
   - [Dependency](#dependency)
-- [Quering](#quering)
+- [HTTP Request Headers](#http-request-headers)
+  - [Prefer](#prefer)
+- [HTTP Request Methods](#http-request-methods)
+  - [HEAD](#head)
+  - [GET](#get)
+  - [POST](#post)
+  - [PUT](#put)
+  - [PATCH](#patch)
+  - [DELETE](#delete)
+  - [OPTIONS](#options)
+- [Querying](#querying)
   - [Filtering](#filtering)
   - [Sorting](#sorting)
   - [Field Selection](#field-selection)
@@ -52,16 +62,6 @@ The REST Layer framework is composed of several sub-packages:
 - [Authentication & Authorization](#authentication-and-authorization)
 - [Conditional Requests](#conditional-requests)
 - [Data Integrity & Concurrency Control](#data-integrity-and-concurrency-control)
-- [HTTP Headers Support](#http-headers-support)
-  - [Prefer](#prefer)
-- [HTTP Methods](#http-methods)
-  - [HEAD](#head)
-  - [GET](#get)
-  - [POST](#post)
-  - [PUT](#put)
-  - [PATCH](#patch)
-  - [DELETE](#delete)
-  - [OPTIONS](#options)
 - [Data Validation](#data-validation)
   - [Nullable Values](#nullable-values)
   - [Extensible Data Validation](#extensible-data-validation)
@@ -77,21 +77,25 @@ The REST Layer framework is composed of several sub-packages:
 
 ## Breaking Changes
 
-Until version 1.0 of rest-layer, breaking changes may occur at any time if you rely on the latest master version.
+Until we reach a stable v1, there will be occasional breaking changes to the rest-layer APIs. Breaking changes will however not arrive at patch releases.
 
-Below is an overview over recent breaking changes, starting from an arbitrary point with PR #151:
+## Breaking changes since v0.2.0
+
+No breaking changes since v0.2.0.
+
+## Breaking changes prior to v0.2.0
+
+Below is an incomplete list of breaking changes included in v0.2.0:
 
 - PR #151: `ValuesValidator FieldValidator` attribute in `schema.Dict` struct replaced by `Values Field`.
 - PR #179: `ValuesValidator FieldValidator` attribute in `schema.Array` struct replaced by `Values Field`.
-- PR #204: 
+- PR #204:
   - Storage drivers need to accept pointer to `Expression` implementer in `query.Predicate`.
   - `filter` parameters in sub-query will be validated for type match.
   - `filter` parameters will be validated for type match only, instead of type & constrains.
 - PR #228: `Reference` projection fields will be validated against referenced resource schema.
 - PR #230: `Connection` projection fields will be validated against connected resource schema.
 - PR #241: Always call `OnUpdate` field hook on HTTP PUT for existing documents. Deleting a field with `Default` value set, will always be reset to its default value.
-
-From the next release and onwards (0.2), this list will summarize breaking changes done to master since the last release.
 
 ## Features
 
@@ -837,7 +841,74 @@ post = schema.Schema{
 }
 ```
 
-## Quering
+## HTTP Request Headers
+
+### Prefer
+
+Currently supported values are:
+
+- [return=minimal](https://tools.ietf.org/html/rfc7240#section-4.2): When a request is successfully (HTTP Response Status of `200` or `201`), response body is not returned. For Response Status of `200 OK`, status becomes `204 No Content`. Can be used for e.g `PUT`, `POST` and `PATCH` methods, where returned body will be known by the client.
+- [return=no-content](https://msdn.microsoft.com/en-us/library/hh537533.aspx): same as `return=minimal`.
+
+```sh
+$ echo '[{"op": "add", "path":"/foo", "value": "bar"}]' | http PATCH :8080/users/ar6ej4mkj5lfl688d8lg If-Match:'"1234567890123456789012345678901234567890"' \
+Content-Type: application/json-patch+json \
+Prefer: return=minimal
+HTTP/1.1 204 No Content
+```
+
+### Content-Type
+
+The Content-Type of the request body. Most HTTP methods only support `"aplication/json"` by default, but `PUT` requests also allow `"application/json-patch+json"`.
+
+## HTTP Request Methods
+
+Following HTTP Methods are currently supported by rest-layer.
+
+### HEAD
+
+The same as `GET`, except it includes only headers in the response.
+
+### GET
+
+Used to query a resource with its sub/embedded resources.
+
+### POST
+
+Used to create new resource document when the `ID` can be generated by the server. Default values are set for omitted fields. If the document did not previously exist `OnCreate` field hooks are issued, otherwise `OnUpdate` field hooks are issued.
+
+### PUT
+
+Used to create or update a single resource document by specifying it's `ID` in the path. Default values are set for omitted fields, and `OnCreate` field hooks are issued.
+
+### PATCH
+
+Used to create or patch a single resource document by specifying it's `ID` in the path. `OnUpdate` field hooks are issued.
+
+REST Layer supports two PATCH protocols, that can be specified via the `Content-Type` header.
+
+- Simple filed replacement [RFC-5789](http://tools.ietf.org/html/rfc5789) - this protocol will udpate only supplied top level fields, and will leave other fields in the document intact. This means that this protocol can't delete fields. Using this protocol is specified with `Content-Type: application/json` HTTP Request header.
+
+- [JSON-Patch/RFC-6902](https://tools.ietf.org/html/rfc6902) - When patching deeply nested documents, it is more convenient to use protocol designed especially for this. Using this protocol is specified with `Content-Type: application/json-patch+json` HTTP Request header.
+
+If using `If-Match` concurrency control as described in the [data control and integrity section](#data-integrity-and-concurrency-control), you could potentially choose to calculate the body of new object client side. Note that the response body for a successful operation can be omitted by supplying a HTTP request header: `Prefer: return=minimal`.
+
+```sh
+$ echo '[{"op": "add", "path":"/foo", "value": "bar"}]' | http PATCH :8080/users/ar6ej4mkj5lfl688d8lg If-Match:'"1234567890123456789012345678901234567890"' \
+Content-Type: application/json-patch+json \
+Prefer: return=minimal
+HTTP/1.1 204 No Content
+```
+
+### DELETE
+
+Used to delete single resource document given its `ID`, or via [Query](#quering).
+
+### OPTIONS
+
+Used to tell the client, which HTTP Methods are supported on a given resource.
+
+## Querying
 
 When supplying query parameters be sure to honor URL encoding scheme. If you need to include `+` sign, use `%2B`, etc.
 
@@ -903,7 +974,7 @@ The flags are:
 |`i`   |case-insensitive                                                           | false
 |`m`   |multi-line mode: ^ and $ match begin/end line in addition to begin/end text| false
 |`s`   |let . match \n                                                             | false
-|`U`   |ungreedy: swap meaning of x\* and x\*?, x+ and x+?, etc                    | false
+|`U`   |non-greedy: swap meaning of x\* and x\*?, x+ and x+?, etc                  | false
 
 For example the following regular expression would match any document with a field `type` and its value `rest-layer`.
 
@@ -918,7 +989,7 @@ The same example with flags:
 ```
 
 However, keep in mind that Storers have to support regular expression and depending on the implementation of the storage handler the accepted syntax may vary.
-An error of `ErrNotImplemented` will be returned for those storage backends which do not support the `$regex` operator.
+An error of `ErrNotImplemented` will be returned for those storage back-ends which do not support the `$regex` operator.
 
 The `$elemMatch` operator matches documents that contain an array field with at least one element that matches all the specified query criteria.
 ```go
