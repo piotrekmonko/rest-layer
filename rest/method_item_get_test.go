@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rs/rest-layer/resource"
-	"github.com/rs/rest-layer/resource/testing/mem"
-	"github.com/rs/rest-layer/schema"
+	"github.com/piotrekmonko/rest-layer/resource"
+	"github.com/piotrekmonko/rest-layer/resource/testing/mem"
+	"github.com/piotrekmonko/rest-layer/schema"
 )
 
 func TestGetItem(t *testing.T) {

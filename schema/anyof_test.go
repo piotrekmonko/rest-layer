@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/rs/rest-layer/schema"
+	"github.com/piotrekmonko/rest-layer/schema"
 )
 
 // hexByteArray implements the FieldSerializer interface.

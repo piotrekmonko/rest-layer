@@ -5,9 +5,9 @@ import (
 	"log"
 
 	"github.com/graphql-go/graphql"
-	"github.com/rs/rest-layer/resource"
-	"github.com/rs/rest-layer/schema"
-	"github.com/rs/rest-layer/schema/query"
+	"github.com/piotrekmonko/rest-layer/resource"
+	"github.com/piotrekmonko/rest-layer/schema"
+	"github.com/piotrekmonko/rest-layer/schema/query"
 )
 
 type types map[string]*graphql.Object

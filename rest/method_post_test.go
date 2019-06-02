@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/rs/rest-layer/resource"
-	"github.com/rs/rest-layer/resource/testing/mem"
-	"github.com/rs/rest-layer/rest"
-	"github.com/rs/rest-layer/schema"
-	"github.com/rs/rest-layer/schema/query"
+	"github.com/piotrekmonko/rest-layer/resource"
+	"github.com/piotrekmonko/rest-layer/resource/testing/mem"
+	"github.com/piotrekmonko/rest-layer/rest"
+	"github.com/piotrekmonko/rest-layer/schema"
+	"github.com/piotrekmonko/rest-layer/schema/query"
 	"github.com/stretchr/testify/assert"
 )
 

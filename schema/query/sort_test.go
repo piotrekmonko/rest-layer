@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/rs/rest-layer/schema"
+	"github.com/piotrekmonko/rest-layer/schema"
 )
 
 func TestParseSort(t *testing.T) {

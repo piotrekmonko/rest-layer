@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rs/rest-layer/schema"
+	"github.com/piotrekmonko/rest-layer/schema"
 )
 
 func TestPrepare(t *testing.T) {

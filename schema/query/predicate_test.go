@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rs/rest-layer/schema"
+	"github.com/piotrekmonko/rest-layer/schema"
 )
 
 func TestMatch(t *testing.T) {

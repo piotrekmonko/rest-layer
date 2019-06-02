@@ -3,7 +3,7 @@ package schema_test
 import (
 	"testing"
 
-	"github.com/rs/rest-layer/schema"
+	"github.com/piotrekmonko/rest-layer/schema"
 	"github.com/stretchr/testify/assert"
 )
 

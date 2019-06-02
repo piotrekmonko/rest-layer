@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	jsonpatch "github.com/evanphx/json-patch"
-	"github.com/rs/rest-layer/resource"
-	"github.com/rs/rest-layer/schema/query"
+	"github.com/piotrekmonko/rest-layer/resource"
+	"github.com/piotrekmonko/rest-layer/schema/query"
 )
 
 func isJSONPatch(r *http.Request) bool {

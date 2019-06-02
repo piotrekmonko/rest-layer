@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rs/rest-layer/schema"
-	"github.com/rs/rest-layer/schema/encoding/jsonschema"
+	"github.com/piotrekmonko/rest-layer/schema"
+	"github.com/piotrekmonko/rest-layer/schema/encoding/jsonschema"
 	"github.com/stretchr/testify/assert"
 )
 
